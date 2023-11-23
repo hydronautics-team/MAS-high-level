@@ -120,6 +120,13 @@ struct DataUWB
     float distanceToAgent[10]; //расстояние до i-го агента
 };
 
+struct PultUWB
+{
+    float beacon_x[3];
+    float beacon_y[3];
+};
+
+
 struct FromBort
 {
     FromBort(int auvID=0)
@@ -143,6 +150,7 @@ struct ToBort
 {
     ControlData controlData; //данные, которые идут с пульта при замыканиии контуров
     e_CSMode cSMode = e_CSMode::MODE_MANUAL; //режим работы
+    PultUWB pultUWB;
     ControlContoursFlags controlContoursFlags; //флаги замыкания контуров (если больше 0, то замкнуты
     unsigned char modeAUV_selection;//текущий выбор модель/реальный НПА
     power_Mode pMode = power_Mode::MODE_2; //режим работы системы питания, структура с желаемыми параметрами системы питания

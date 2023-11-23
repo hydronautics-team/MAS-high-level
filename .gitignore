@@ -1,5 +1,5 @@
 .vscode
 .devcontainer
 log
-build-*
-install-*
+build*
+install*

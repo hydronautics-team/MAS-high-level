@@ -4,7 +4,6 @@
 #include <thread>
 
 #include <rclcpp/rclcpp.hpp>
-#include <std_msgs/msg/string.hpp>
 
 #include "udp_publisher/udp_server.h"
 #include "udp_publisher/udp_client.h"
@@ -16,10 +15,10 @@
 class MinimalPublisher : public rclcpp::Node {
 public:
     // По факту это IP и ПОРТ на текущей тачке, так как тут будет сервер (хост), который только принимает
-    static constexpr std::string_view RECIEVER_IP = "127.0.0.1"; 
+    static constexpr std::string_view RECIEVER_IP = "192.168.1.173"; 
     static constexpr unsigned short RECIEVER_PORT = 13051;
     // По факту это IP и ПОРТ на другой тачке, где запускается легаси борт QT как хост, а мы только шлем
-    static constexpr std::string_view SENDER_IP = "127.0.0.1"; 
+    static constexpr std::string_view SENDER_IP = "192.168.1.173"; 
     static constexpr unsigned short SENDER_PORT = 13050;
 
     MinimalPublisher()
@@ -31,18 +30,35 @@ public:
     {}
 
 private:
-    void planner_msg_callback(udp_publisher::msg::ToBort &message) {  //убрала const, потому что ругался
+    void planner_msg_callback(udp_publisher::msg::ToBort const &message) {  
         RCLCPP_INFO_STREAM(this->get_logger(), "Received from planner");
-        udp_publisher::msg::ToBort* snd = &message;
-        std::string sendMsg = std::to_string(snd->yaw_joy) + std::to_string(snd->pitch_joy) + 
-        std::to_string(snd->roll_joy) + std::to_string(snd->march_joy) + std::to_string(snd->depth_joy) + 
-        std::to_string(snd->lag_joy) + std::to_string(snd->cs_mode) + std::to_string(snd->beacon_x[3]) + 
-        std::to_string(snd->beacon_y[3])  + std::to_string(snd->yaw_closed_real) + std::to_string(snd->pitch_closed_real) + 
-        std::to_string(snd->roll_closed_real) + std::to_string(snd->march_closed_real) + std::to_string(snd->depth_closed_real) + 
-        std::to_string(snd->lag_closed_real) + std::to_string(snd->mode_auv_selection) + std::to_string(snd->power_mode) + 
-        std::to_string(snd->init_calibration) + std::to_string(snd->save_calibration) + std::to_string(snd->checksum_to_bort);
+        ToBort rawMsg;
 
-        sender_.send(sendMsg);
+        rawMsg.controlData.yaw = message.yaw_joy;
+        rawMsg.controlData.pitch = message.pitch_joy;
+        rawMsg.controlData.roll = message.roll_joy;
+        rawMsg.controlData.march = message.march_joy;
+        rawMsg.controlData.depth = message.depth_joy;
+        rawMsg.controlData.lag = message.lag_joy;
+        rawMsg.cSMode = e_CSMode(message.cs_mode);
+        rawMsg.pultUWB.beacon_x[3] = message.beacon_x[3];
+        rawMsg.pultUWB.beacon_y[3] = message.beacon_y[3];
+        rawMsg.controlContoursFlags.yaw = message.yaw_closed_real;
+        rawMsg.controlContoursFlags.pitch = message.pitch_closed_real;
+        rawMsg.controlContoursFlags.roll = message.roll_closed_real;
+        rawMsg.controlContoursFlags.march = message.march_closed_real;
+        rawMsg.controlContoursFlags.depth = message.depth_closed_real;
+        rawMsg.controlContoursFlags.lag = message.lag_closed_real;
+        rawMsg.modeAUV_selection = message.mode_auv_selection;
+        rawMsg.pMode = power_Mode(message.power_mode);
+        rawMsg.flagAH127C_pult.initCalibration = message.init_calibration;
+        rawMsg.flagAH127C_pult.saveCalibration = message.save_calibration;
+        rawMsg. checksum = message.checksum_to_bort;
+
+        // RCLCPP_INFO_STREAM(this->get_logger(), "rawMsg " << rawMsg.controlContoursFlags.yaw );
+        
+        std::string sendMsg((char*)&rawMsg, sizeof(ToBort));
+        sender_.send(sendMsg); 
     }
 
     void recv_callback(std::string recv_msg) {

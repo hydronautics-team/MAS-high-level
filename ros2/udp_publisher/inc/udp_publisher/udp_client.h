@@ -25,7 +25,6 @@ public:
 
     void send(const std::string &data) {
         io_service_.post(std::bind(&UdpClient::do_send, this, data));
-        
     }
 
 private:
