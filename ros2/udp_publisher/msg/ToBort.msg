@@ -30,4 +30,8 @@ uint8 power_mode
 uint8 init_calibration
 uint8 save_calibration
 
+# команды управления миссией
+uint8 id_mission_auv
+uint8 mission_command
+
 uint8 checksum_to_bort

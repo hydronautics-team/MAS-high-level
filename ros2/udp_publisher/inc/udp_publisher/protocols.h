@@ -19,9 +19,23 @@ enum class power_Mode : unsigned char
     MODE_5 //выключить вычислитель на 5 секунд и включить обратно
 };
 
+enum class mission_Control : unsigned char
+{ //команды управления миссией
+    MODE_IDLE = 0, //ожидание
+    MODE_START, //отправка запроса на выполнение миссии
+    MODE_CANCEL, //отмена выполнения миссии
+    MODE_STOP, //пауза, остановить временно
+    MODE_COMPLETE //завершить миссию
+};
 
-//структура данных, которая передается из Северова в Пульт
-//тут описаны данные, которые Пульт принимает от Северова
+enum class mission_Status : unsigned char
+{ //состояние миссии
+    MODE_IDLE = 0, //ожидание
+    MODE_ERROR, //ошибка инициализации миссии
+    MODE_RUNNING, //миссия запущена и выполняется
+    MODE_STOPPED, //миссия приостановлена, на паузе
+    MODE_PERFOMED, //миссия завершена
+};
 
 struct ControlData
 { //данные, которые идут с пульта в СУ
@@ -141,6 +155,8 @@ struct FromBort
     DataPressure dataPressure; //данные с датчика давления
     DataUWB dataUWB;//данные с UWB
     FlagAH127C_bort flagAH127C_bort;
+    unsigned char ID_mission = 0;
+    mission_Status missionStatus = mission_Status::MODE_IDLE;
     unsigned int checksum;
 
 };
@@ -155,6 +171,8 @@ struct ToBort
     unsigned char modeAUV_selection;//текущий выбор модель/реальный НПА
     power_Mode pMode = power_Mode::MODE_2; //режим работы системы питания, структура с желаемыми параметрами системы питания
     FlagAH127C_pult flagAH127C_pult;
+    unsigned char ID_mission_AUV = 0;
+    mission_Control missionControl = mission_Control::MODE_IDLE;
     unsigned int checksum;
 
 };

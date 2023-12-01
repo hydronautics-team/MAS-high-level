@@ -4,6 +4,9 @@
 docker build -t <image_name> --output=type=docker .
 docker compose up -d
 docker exec -it <container_name> bash
+docker exec -it mas_high_level bash
+
+
 ```
 
 ## Сборка
