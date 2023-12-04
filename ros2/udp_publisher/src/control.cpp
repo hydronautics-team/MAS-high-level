@@ -12,7 +12,7 @@ class Control : public rclcpp::Node {
 public:
     static constexpr int TIMER_RATE_MSEC = 100;
     int flag_start_yaw = 1;
-    int DURATION = 100;
+    int DURATION = 300;
     int count_duration = 0;
 
     Control() 
@@ -28,32 +28,29 @@ public:
 
 private:
     void config_file_callback(std_msgs::msg::String const &conf_string) { 
-        std::string conf_str = (char*)&conf_string;
-        if (conf_str == "Go_with_yaw_and_peleng") {
+        // std::string conf_str = (char*)&conf_string;
+        // RCLCPP_INFO_STREAM(this->get_logger(), conf_str);
+        //if (conf_str == "Go_with_yaw_and_peleng") {
             auto message = udp_publisher::msg::ToBort();
             
-            if (count_duration < DURATION) {   
-                if (flag_start_yaw == 0) {
-                    message.yaw_joy = 0;
-                } else {
-                message.yaw_joy = 90;    
-                }
+            if (count_duration < DURATION) {                
+                message.yaw_joy = -7;    
                 message.pitch_joy= 0;
                 message.roll_joy = 0;
-                message.march_joy = 40;
+                message.march_joy = 3;
                 message.depth_joy= 0;
                 message.lag_joy= 0;
-                message.cs_mode = 1;
+                message.cs_mode = 0;
                 message.beacon_x[3] = 0;
                 message.beacon_y[3] = 0;
-                message.yaw_closed_real = 1;
+                message.yaw_closed_real = 0;
                 message.pitch_closed_real = 0;
                 message.roll_closed_real = 0;
                 message.march_closed_real = 0;
                 message.depth_closed_real = 0;
                 message.lag_closed_real = 0;
                 message.mode_auv_selection = 0;
-                message.power_mode = 0;
+                message.power_mode = 2;
                 message.init_calibration = 0;
                 message.save_calibration = 0;          
                 message.id_mission_auv = 2;
@@ -63,7 +60,7 @@ private:
                 flag_start_yaw = 0;
                 count_duration++;
             } 
-            if (count_duration == DURATION) {
+            if (count_duration >= DURATION) {
                 message.yaw_joy = 0;
                 message.pitch_joy= 0;
                 message.roll_joy = 0;
@@ -80,7 +77,7 @@ private:
                 message.depth_closed_real = 0;
                 message.lag_closed_real = 0;
                 message.mode_auv_selection = 0;
-                message.power_mode = 0;
+                message.power_mode = 2;
                 message.init_calibration = 0;
                 message.save_calibration = 0;
                 message.id_mission_auv = 2;
@@ -89,7 +86,7 @@ private:
             }
             RCLCPP_INFO_STREAM(this->get_logger(), "cnt " << count_duration  );
             publisher_from_pult->publish(message);
-        }
+        //}
     }    
 
     void timer_callback() {

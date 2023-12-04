@@ -29,7 +29,7 @@ docker exec -it mas_high_level bash
 
 ## Деплой (можно и вне контейнера, если есть пакеты python3, sshpass и scp)
 
-```console
+```console !!!!!!!!!!!!!!!!!НЕ РАБОТАЕТ!!!!!!!!!!!!!!!
 ./deploy.py <ip> <password>
 ```
 или
@@ -37,3 +37,5 @@ docker exec -it mas_high_level bash
 ./deploy.py <user>@<ip> <password>
 ```
 Если настроить правильно ssh ключи, можно будет убрать пароль из скрипта
+
+## Перед запуском
