@@ -28,7 +28,10 @@ public:
     static constexpr std::string_view SENDER_IP_PULT = "192.168.1.173"; 
     static constexpr unsigned short SENDER_PORT_PULT = 13053;
 
-    int flag_start_mission = 0;
+    int flag_start_mission_1 = 0;
+    int flag_start_mission_2 = 0;
+    
+
 
     MinimalPublisher()
     : Node("minimal_publisher")
@@ -36,6 +39,7 @@ public:
     , publisher_pult(this->create_publisher<udp_publisher::msg::ToBort>("udp_message_pult", 1))
     , publisher_name_configure_file((this->create_publisher<std_msgs::msg::String>("name_config_file", 1)))
     , subscription_(this->create_subscription<udp_publisher::msg::ToBort>("planner_message", 1, std::bind(&MinimalPublisher::planner_msg_callback, this, std::placeholders::_1)))
+    , subscription_to_pult(this->create_subscription<udp_publisher::msg::FromBort>("planner_feedback", 1, std::bind(&MinimalPublisher::planner_fbc_callback, this, std::placeholders::_1)))
     , receiver_from_bort(RECEIVER_IP, RECEIVER_PORT, std::bind(&MinimalPublisher::recv_callback, this, std::placeholders::_1), this->get_logger())
     , sender_to_bort(SENDER_IP, SENDER_PORT, this->get_logger())
     , receiver_from_pult(RECEIVER_IP_PULT, RECEIVER_PORT_PULT, std::bind(&MinimalPublisher::recv_callback_pult, this, std::placeholders::_1), this->get_logger())
@@ -68,7 +72,7 @@ private:
         rawMsg.flagAH127C_pult.saveCalibration = message.save_calibration;
         rawMsg.ID_mission_AUV = message.id_mission_auv;
         rawMsg.missionControl = mission_Control(message.mission_command);
-        rawMsg. checksum = message.checksum_to_bort;
+        rawMsg.checksum = message.checksum_to_bort;
 
         std::string sendMsg((char*)&rawMsg, sizeof(ToBort));
         sender_to_bort.send(sendMsg); 
@@ -77,9 +81,81 @@ private:
         //int flag_start_mission = 0;
     }
 
-    // void send_msg_to_pult(udp_publisher::msg::ToBort const &message) {  
-        
-    // }
+    uint checksum_i(const void * data, int size){ // function for checksum (uint)
+        uint c = 0;
+        for (int i = 0; i < size; ++i)
+            c += ((const unsigned char*)data)[i];
+        return ~(c + 1);
+    }
+
+    void planner_fbc_callback(udp_publisher::msg::FromBort const &message) { 
+        FromBort rawMsg;
+
+        rawMsg.headerSwap.senderID = message.sender_id;
+        rawMsg.headerSwap.receiverID = message.receiver_id;
+        rawMsg.headerSwap.msgSize = message.msg_size;
+
+        rawMsg.auvData.modeReal = message.mode_real;
+
+        rawMsg.auvData.controlReal.yaw = message.yaw_contour;
+        rawMsg.auvData.controlReal.pitch = message.pitch_contour;
+        rawMsg.auvData.controlReal.roll = message.roll_contour;
+        rawMsg.auvData.controlReal.march = message.march_contour;
+        rawMsg.auvData.controlReal.depth = message.depth_contour;
+        rawMsg.auvData.controlReal.lag = message.lag_contour;
+
+        rawMsg.auvData.modeAUV_Real = message.mode_auv_real;
+
+        rawMsg.auvData.ControlDataReal.yaw = message.yaw;
+        rawMsg.auvData.ControlDataReal.pitch = message.pitch;
+        rawMsg.auvData.ControlDataReal.roll = message.roll;
+        rawMsg.auvData.ControlDataReal.march = message.march;
+        rawMsg.auvData.ControlDataReal.depth = message.depth;
+        rawMsg.auvData.ControlDataReal.lag = message.lag;
+
+        rawMsg.auvData.signalVMA_real.VMA1 = message.vma1;
+        rawMsg.auvData.signalVMA_real.VMA2 = message.vma2;
+        rawMsg.auvData.signalVMA_real.VMA3 = message.vma3;
+        rawMsg.auvData.signalVMA_real.VMA4 = message.vma4;
+        rawMsg.auvData.signalVMA_real.VMA5 = message.vma5;
+        rawMsg.auvData.signalVMA_real.VMA6 = message.vma6;
+
+        rawMsg.dataAH127C.yaw = message.yaw_imu;
+        rawMsg.dataAH127C.pitch = message.pitch_imu;
+        rawMsg.dataAH127C.roll = message.roll_imu;
+        rawMsg.dataAH127C.X_accel = message.x_accel_imu;
+        rawMsg.dataAH127C.Y_accel = message.y_accel_imu;
+        rawMsg.dataAH127C.Z_accel = message.z_accel_imu;
+        rawMsg.dataAH127C.X_rate = message.x_rate_imu;
+        rawMsg.dataAH127C.Y_rate = message.y_rate_imu;
+        rawMsg.dataAH127C.Z_rate = message.z_rate_imu;
+        rawMsg.dataAH127C.X_magn = message.x_magn_imu;
+        rawMsg.dataAH127C.Y_magn = message.y_magn_imu;
+        rawMsg.dataAH127C.Z_magn = message.z_magn_imu;
+        rawMsg.dataAH127C.quat[4] = message.quat[4];
+
+        rawMsg.dataPressure.temperature = message.temperature;
+        rawMsg.dataPressure.depth = message.depth_sensor;
+        rawMsg.dataPressure.pressure = message.pressure;
+
+        rawMsg.dataUWB.error_code = message.error_code_uwb;
+        rawMsg.dataUWB.connection_field = message.connection_field_uwb;
+        rawMsg.dataUWB.locationX = message.location_x;
+        rawMsg.dataUWB.locationY = message.location_y;
+        rawMsg.dataUWB.distanceToBeacon[4] = message.distance_to_beacon[4];
+        rawMsg.dataUWB.distanceToAgent[10] = message.distance_to_agent[10];
+
+        rawMsg.flagAH127C_bort.startCalibration = message.start_calibration;
+        rawMsg.flagAH127C_bort.endCalibration = message.end_calibration;
+
+        rawMsg.ID_mission = message.id_mission;
+        rawMsg.missionStatus = mission_Status(message.mission_status);
+
+        rawMsg.checksum =checksum_i(&rawMsg, sizeof(rawMsg) - 4);
+
+        std::string sendMsg((char*)&rawMsg, sizeof(FromBort)); //???????????????????????      
+        sender_to_pult.send(sendMsg); 
+    }
 
     void recv_callback(std::string recv_msg) {
         RCLCPP_INFO_STREAM(this->get_logger(), "Received from bort");
@@ -133,6 +209,8 @@ private:
         message.depth_sensor = rec->dataPressure.depth;
         message.pressure = rec->dataPressure.pressure;
 
+        message.error_code_uwb = rec->dataUWB.error_code;
+        message.connection_field_uwb = rec->dataUWB.connection_field;
         message.location_x = rec->dataUWB.locationX;
         message.location_y =  rec->dataUWB.locationY;
         message.distance_to_beacon[4] =  rec->dataUWB.distanceToBeacon[4];
@@ -142,17 +220,17 @@ private:
         message.end_calibration = rec->flagAH127C_bort.endCalibration;
 
         message.id_mission = rec->ID_mission;
-        message.mission_status = message.mission_status;
+        message.mission_status = uint8_t(rec->missionStatus);
 
         message.checksum = rec->checksum;
 
-        if (message.mode_real == 0) {
+        if (message.id_mission == 0 && message.mission_status == 0) {
             sender_to_pult.send(recv_msg); 
         }
 
-        if (message.mode_real == 3) {
-        //автоматический режим
-        }
+        // if (message.mode_real == 3) {
+        // //автоматический режим
+        // }
 
         publisher_->publish(message);
   
@@ -187,27 +265,47 @@ private:
         msg.checksum_to_bort = rec->checksum;
 
         publisher_pult->publish(msg);
+        
+        //flag_start_mission - для того, чтобы эта строка определения миссии постилась в топик единожды
+        if (msg.cs_mode == 2) { //режим втоматический
+            if (msg.id_mission_auv == 2)  {  //выбрана миссия следования    
+                if (msg.mission_command == 1 && flag_start_mission_1 == 0)   { //команда старт нажата
+                    auto name = std_msgs::msg::String();
+                    name.data = "go_with_yaw_and_peleng";
+                    publisher_name_configure_file->publish(name);
+                    flag_start_mission_1 = 1; 
+                    RCLCPP_INFO_STREAM(this->get_logger(), "publish_Go_with_yaw_and_peleng");
+                }  
+                if (msg.mission_command == 2 && flag_start_mission_1 == 1) {  //выбрана отмена миссии
 
-        if (msg.cs_mode == 2 && msg.mission_command == 1) {
-            flag_start_mission = 1;
-            if (msg.id_mission_auv == 2)   {
-                auto name = std_msgs::msg::String();
-                name.data = "Go_to_point";
-                publisher_name_configure_file->publish(name);
-                RCLCPP_INFO_STREAM(this->get_logger(), "publish_Go_to_point");
-            }     
-            
-            if (msg.id_mission_auv == 1)   {
-                auto name = std_msgs::msg::String();
-                name.data = "Go_with_yaw_and_peleng";
-                publisher_name_configure_file->publish(name);
-                RCLCPP_INFO_STREAM(this->get_logger(), "publish_Go_with_yaw_and_peleng");
-            }     
+                }   
+                if (msg.mission_command == 3) { //выбрана приостановка миссии
+
+                }
+                if (msg.mission_command == 4) { //выбрано завершение миссии
+                    flag_start_mission_1 = 0; 
+                }
             }
-        //!!!!!!!!!!исправить, потому что в автоматическом тоже надо отправлять
-        if (flag_start_mission == 0) {
-            planner_msg_callback(msg);
-            
+        }
+
+        if (msg.cs_mode == 2) { 
+            if (msg.id_mission_auv == 1){
+                if (msg.mission_command == 1  && flag_start_mission_2 == 0)   {
+                    auto name = std_msgs::msg::String();
+                    name.data = "go_to_point";
+                    publisher_name_configure_file->publish(name);
+                    flag_start_mission_2 = 1; 
+                    RCLCPP_INFO_STREAM(this->get_logger(), "publish_Go_to_point_!!!!!!!!!!!!!!!!!!!!!");
+                } 
+                if (msg.mission_command == 4) { //выбрано завершение миссии
+                    flag_start_mission_2 = 0; 
+                }
+        }
+        }
+
+        if (msg.id_mission_auv == 0 && (msg.mission_command == 0 || msg.mission_command == 4 )) {
+            planner_msg_callback(msg);   
+            RCLCPP_INFO_STREAM(this->get_logger(), "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");        
         }
         
     }
@@ -217,6 +315,7 @@ private:
     rclcpp::Publisher<udp_publisher::msg::ToBort>::SharedPtr publisher_pult;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_name_configure_file;
     rclcpp::Subscription<udp_publisher::msg::ToBort>::SharedPtr subscription_;
+    rclcpp::Subscription<udp_publisher::msg::FromBort>::SharedPtr subscription_to_pult;
     udp_publisher::UdpServer receiver_from_bort;
     udp_publisher::UdpClient sender_to_bort;
     udp_publisher::UdpServer receiver_from_pult;

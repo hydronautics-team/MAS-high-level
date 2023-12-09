@@ -53,6 +53,8 @@ float32 depth_sensor
 float32 pressure  
 
 # данные с UWB
+uint16 error_code_uwb
+uint16 connection_field_uwb
 float32 location_x # координата аппарата по оси X
 float32 location_y # координата аппарата по оси Y
 float32[4] distance_to_beacon # расстоние до i-го маяка
@@ -64,5 +66,4 @@ uint8 end_calibration
 # состояние миссии
 uint8 id_mission 
 uint8 mission_status
-
 uint32 checksum

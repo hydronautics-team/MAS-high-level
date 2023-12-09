@@ -128,6 +128,8 @@ struct DataPressure
 
 struct DataUWB
 { //структура данных с сверхширокополосного модуля
+    uint16_t error_code = 0;
+    uint16_t connection_field = 0;
     float locationX = 0; //координата аппарата по оси X
     float locationY = 0; //координата аппарата по оси Y
     float distanceToBeacon[4]; //расстоние до i-го маяка
@@ -136,7 +138,7 @@ struct DataUWB
 
 struct PultUWB
 {
-    float beacon_x[3];
+    float beacon_x[3]; //передача координат буев
     float beacon_y[3];
 };
 

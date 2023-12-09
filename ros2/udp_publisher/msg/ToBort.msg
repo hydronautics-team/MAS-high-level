@@ -34,4 +34,4 @@ uint8 save_calibration
 uint8 id_mission_auv
 uint8 mission_command
 
-uint8 checksum_to_bort
+uint32 checksum_to_bort

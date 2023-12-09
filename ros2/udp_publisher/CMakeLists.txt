@@ -50,6 +50,12 @@ add_executable(control
 ament_target_dependencies(control rclcpp  std_msgs)
 target_link_libraries(control "${cpp_typesupport_target}")
 
+target_include_directories(control
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>
+    $<INSTALL_INTERFACE:include>
+)
+
 install(TARGETS
   publisher
   control
