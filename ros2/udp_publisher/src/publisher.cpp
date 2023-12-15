@@ -16,13 +16,13 @@
 class MinimalPublisher : public rclcpp::Node {
 public:
     // По факту это IP и ПОРТ на текущей тачке, так как тут будет сервер (хост), который только принимает
-    static constexpr std::string_view RECEIVER_IP = "192.168.1.173"; 
+    static constexpr std::string_view RECEIVER_IP = "192.168.1.11"; 
     static constexpr unsigned short RECEIVER_PORT = 13051;
     // По факту это IP и ПОРТ на другой тачке, где запускается легаси борт QT как хост, а мы только шлем
-    static constexpr std::string_view SENDER_IP = "192.168.1.173"; 
+    static constexpr std::string_view SENDER_IP = "192.168.1.11"; 
     static constexpr unsigned short SENDER_PORT = 13050;
     // IP и ПОРТ на текущей тачке, так как тут будет сервер, порт должен отличаться от другого приемника
-    static constexpr std::string_view RECEIVER_IP_PULT = "192.168.1.173"; 
+    static constexpr std::string_view RECEIVER_IP_PULT = "192.168.1.11"; 
     static constexpr unsigned short RECEIVER_PORT_PULT = 13052;
     // IP и ПОРТ пульта(планировщика), на который мы можем слать обратную связь от ноды управления движением
     static constexpr std::string_view SENDER_IP_PULT = "192.168.1.173"; 
@@ -30,8 +30,7 @@ public:
 
     int flag_start_mission_1 = 0;
     int flag_start_mission_2 = 0;
-    
-
+    int flag_start_mission_3 = 0;
 
     MinimalPublisher()
     : Node("minimal_publisher")
@@ -225,6 +224,7 @@ private:
         message.checksum = rec->checksum;
 
         if (message.id_mission == 0 && message.mission_status == 0) {
+            RCLCPP_INFO_STREAM(this->get_logger(), "eeeeeeeeerrrrrrrrrrrrrrroooooooooooooooooorrrrrrrrrrrrrr");
             sender_to_pult.send(recv_msg); 
         }
 
@@ -265,6 +265,21 @@ private:
         msg.checksum_to_bort = rec->checksum;
 
         publisher_pult->publish(msg);
+
+        if (msg.cs_mode == 2) { 
+            if (msg.id_mission_auv == 1){  //выбрана миссия выхода в точку   
+                if (msg.mission_command == 1  && flag_start_mission_2 == 0)   {
+                    auto name = std_msgs::msg::String();
+                    name.data = "go_to_point";
+                    publisher_name_configure_file->publish(name);
+                    flag_start_mission_2 = 1; 
+                    RCLCPP_INFO_STREAM(this->get_logger(), "publish_Go_to_point_!!!!!!!!!!!!!!!!!!!!!");
+                } 
+                if (msg.mission_command == 4) { //выбрано завершение миссии
+                    flag_start_mission_2 = 0; 
+                }
+        }
+        }
         
         //flag_start_mission - для того, чтобы эта строка определения миссии постилась в топик единожды
         if (msg.cs_mode == 2) { //режим втоматический
@@ -288,23 +303,23 @@ private:
             }
         }
 
-        if (msg.cs_mode == 2) { 
-            if (msg.id_mission_auv == 1){
-                if (msg.mission_command == 1  && flag_start_mission_2 == 0)   {
+        if (msg.cs_mode == 2) { //режим втоматический
+            if (msg.id_mission_auv == 3){ //выбрана миссия траектория
+                if (msg.mission_command == 1  && flag_start_mission_3 == 0)   {
                     auto name = std_msgs::msg::String();
-                    name.data = "go_to_point";
+                    name.data = "go_along_trajectory";
                     publisher_name_configure_file->publish(name);
-                    flag_start_mission_2 = 1; 
-                    RCLCPP_INFO_STREAM(this->get_logger(), "publish_Go_to_point_!!!!!!!!!!!!!!!!!!!!!");
+                    flag_start_mission_3 = 1; 
+                    RCLCPP_INFO_STREAM(this->get_logger(), "go_along_trajectory");
                 } 
                 if (msg.mission_command == 4) { //выбрано завершение миссии
-                    flag_start_mission_2 = 0; 
+                    flag_start_mission_3 = 0; 
                 }
         }
         }
 
-        if (msg.id_mission_auv == 0 && (msg.mission_command == 0 || msg.mission_command == 4 )) {
-            planner_msg_callback(msg);   
+        if (msg.id_mission_auv == 0 /* && (msg.mission_command == 0 || msg.mission_command == 4 )*/) {
+            sender_to_bort.send(recv_msg_pult);   
             RCLCPP_INFO_STREAM(this->get_logger(), "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");        
         }
         

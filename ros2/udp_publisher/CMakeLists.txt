@@ -56,13 +56,24 @@ target_include_directories(control
     $<INSTALL_INTERFACE:include>
 )
 
+add_executable(trajectory
+  src/trajectory.cpp
+)
+ament_target_dependencies(trajectory rclcpp  std_msgs)
+target_link_libraries(trajectory "${cpp_typesupport_target}")
+
+target_include_directories(trajectory
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/inc>
+    $<INSTALL_INTERFACE:include>
+)
+
 install(TARGETS
   publisher
   control
+  trajectory
   DESTINATION lib/${PROJECT_NAME}
 )
-
-
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
