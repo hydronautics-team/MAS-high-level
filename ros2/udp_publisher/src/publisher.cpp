@@ -16,17 +16,17 @@
 class MinimalPublisher : public rclcpp::Node {
 public:
     // По факту это IP и ПОРТ на текущей тачке, так как тут будет сервер (хост), который только принимает
-    static constexpr std::string_view RECEIVER_IP = "192.168.1.11"; 
+    static constexpr std::string_view RECEIVER_IP = "192.168.1.173"; 
     static constexpr unsigned short RECEIVER_PORT = 13051;
     // По факту это IP и ПОРТ на другой тачке, где запускается легаси борт QT как хост, а мы только шлем
-    static constexpr std::string_view SENDER_IP = "192.168.1.11"; 
+    static constexpr std::string_view SENDER_IP = "192.168.1.173"; 
     static constexpr unsigned short SENDER_PORT = 13050;
     // IP и ПОРТ на текущей тачке, так как тут будет сервер, порт должен отличаться от другого приемника
-    static constexpr std::string_view RECEIVER_IP_PULT = "192.168.1.11"; 
-    static constexpr unsigned short RECEIVER_PORT_PULT = 13052;
+    static constexpr std::string_view RECEIVER_IP_PULT = "192.168.1.173"; 
+    static constexpr unsigned short RECEIVER_PORT_PULT = 13054;
     // IP и ПОРТ пульта(планировщика), на который мы можем слать обратную связь от ноды управления движением
     static constexpr std::string_view SENDER_IP_PULT = "192.168.1.173"; 
-    static constexpr unsigned short SENDER_PORT_PULT = 13053;
+    static constexpr unsigned short SENDER_PORT_PULT = 13055;
 
     int flag_start_mission_1 = 0;
     int flag_start_mission_2 = 0;
@@ -152,7 +152,7 @@ private:
 
         rawMsg.checksum =checksum_i(&rawMsg, sizeof(rawMsg) - 4);
 
-        std::string sendMsg((char*)&rawMsg, sizeof(FromBort)); //???????????????????????      
+        std::string sendMsg((char*)&rawMsg, sizeof(FromBort));      
         sender_to_pult.send(sendMsg); 
     }
 
@@ -224,7 +224,7 @@ private:
         message.checksum = rec->checksum;
 
         if (message.id_mission == 0 && message.mission_status == 0) {
-            RCLCPP_INFO_STREAM(this->get_logger(), "eeeeeeeeerrrrrrrrrrrrrrroooooooooooooooooorrrrrrrrrrrrrr");
+            // RCLCPP_INFO_STREAM(this->get_logger(), "eeeeeeeeerrrrrrrrrrrrrrroooooooooooooooooorrrrrrrrrrrrrr");
             sender_to_pult.send(recv_msg); 
         }
 

@@ -13,7 +13,7 @@
 
 class Control : public rclcpp::Node {
 public:
-    static constexpr int TIMER_RATE_MSEC = 1000;
+    static constexpr int TIMER_RATE_MSEC = 10;
     int flag_start_yaw = 1;
     int DURATION = 300;
     int count_duration = 0;
@@ -22,7 +22,7 @@ public:
     udp_publisher::msg::FromBort msg_from_bort_for_planner;
     udp_publisher::msg::ToBort msg_from_pult_for_planner;
     float x_goal = 100;
-    float y_goal = 100;
+    float y_goal = 0;
     // float x_goal = 3;
     // float y_goal = 3;
 
@@ -147,8 +147,8 @@ private:
         float y_v_SK_sv_x_y_goal = msg_from_bort_for_planner.location_y- y_goal;
 
         // проверка расстояния до целевой точки, если < 2м, то размыкаю контура
-        if (sqrt(pow((msg_from_bort_for_planner.location_x - x_goal), 2) + pow((msg_from_bort_for_planner.location_y- y_goal), 2)) < 40) {  
-            RCLCPP_INFO_STREAM(this->get_logger(), "You are in two meters radius");
+        if (sqrt(pow((msg_from_bort_for_planner.location_x - x_goal), 2) + pow((msg_from_bort_for_planner.location_y - y_goal), 2)) < 30) {  
+            RCLCPP_INFO_STREAM(this->get_logger(), "You are in radius");
             message_to_bort = msg_from_pult_for_planner;
             message_to_bort.yaw_joy = 0;
             message_to_bort.pitch_joy= 0;
@@ -172,6 +172,8 @@ private:
             message_to_pult= msg_from_bort_for_planner;          
             message_to_pult.id_mission = 2;
             message_to_pult.mission_status = 4;
+
+            timer_exit_to_point->cancel();
 
         } else {
             //message_to_bort.yaw_joy = atan2(y_v_SK_sv_x_y_goal,x_v_SK_sv_x_y_goal)*(180/M_PI);

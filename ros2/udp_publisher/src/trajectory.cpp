@@ -13,7 +13,7 @@
 
 class Trajectory : public rclcpp::Node {
 public:
-    static constexpr int TIMER_RATE_MSEC = 100;
+    static constexpr int TIMER_RATE_MSEC = 10;
     
     udp_publisher::msg::FromBort msg_from_bort_for_planner;
     udp_publisher::msg::ToBort msg_from_pult_for_planner;
@@ -21,8 +21,8 @@ public:
     // float y_goal = 100;
     static const int NUMBER_OF_POINT = 3;
     float goal[NUMBER_OF_POINT][2] = {{3, 3}, 
-                                      {6, 6}, 
-                                      {9, 9}}; 
+                                      {6, 2}, 
+                                      {9, 5}}; 
     int number_of_point = 0;
 
     Trajectory() 
@@ -81,7 +81,7 @@ void timer_trajectory_callback() {
     RCLCPP_INFO_STREAM(this->get_logger(), sqrt(pow((msg_from_bort_for_planner.location_x - goal[number_of_point][0]), 2) + pow((msg_from_bort_for_planner.location_y- goal[number_of_point][1]), 2)));
     RCLCPP_INFO_STREAM(this->get_logger(), "^^^^^^^^^^^^^^^^^^^^^"); 
 
-    if (sqrt(pow((msg_from_bort_for_planner.location_x - goal[number_of_point][0]), 2) + pow((msg_from_bort_for_planner.location_y- goal[number_of_point][1]), 2)) < 2) {  
+    if (sqrt(pow((msg_from_bort_for_planner.location_x - goal[number_of_point][0]), 2) + pow((msg_from_bort_for_planner.location_y- goal[number_of_point][1]), 2)) < 1.5) {  
         if (number_of_point >= NUMBER_OF_POINT-1)  {
             RCLCPP_INFO_STREAM(this->get_logger(), "You are in two meters radius");
             message_to_bort = msg_from_pult_for_planner;
@@ -107,9 +107,36 @@ void timer_trajectory_callback() {
             message_to_pult = msg_from_bort_for_planner;          
             message_to_pult.id_mission = 2;
             message_to_pult.mission_status = 4;
+
+            timer_trajectory->cancel();
+
+
             } else {
                 number_of_point++;  
                 RCLCPP_INFO_STREAM(this->get_logger(), "moved to next point");
+                message_to_bort = msg_from_pult_for_planner;
+                message_to_bort.yaw_joy = 0;
+                message_to_bort.pitch_joy= 0;
+                message_to_bort.roll_joy = 0;
+                message_to_bort.march_joy = 0;
+                message_to_bort.depth_joy= 0;
+                message_to_bort.lag_joy= 0;
+                message_to_bort.cs_mode = 2;
+                message_to_bort.yaw_closed_real = 0;
+                message_to_bort.pitch_closed_real = 0;
+                message_to_bort.roll_closed_real = 0;
+                message_to_bort.march_closed_real = 0;
+                message_to_bort.depth_closed_real = 0;
+                message_to_bort.lag_closed_real = 0;
+                //message_to_bort.power_mode = 2;
+                message_to_bort.init_calibration = 0;
+                message_to_bort.save_calibration = 0;
+                message_to_bort.id_mission_auv = 1;
+                message_to_bort.checksum_to_bort = 0;
+
+                message_to_pult = msg_from_bort_for_planner;          
+                message_to_pult.id_mission = 2;
+                message_to_pult.mission_status = 2;
             }
         } else {
             RCLCPP_INFO_STREAM(this->get_logger(), "^^^^^^^^^^^^^^^^^^^^^"); 
