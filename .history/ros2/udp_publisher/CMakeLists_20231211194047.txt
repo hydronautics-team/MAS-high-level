@@ -16,7 +16,6 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(Boost COMPONENTS system REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
-find_package(nlohmann_json REQUIRED)
 
 set(msg_files
   "msg/FromBort.msg"
@@ -49,8 +48,7 @@ add_executable(control
   src/control.cpp
 )
 ament_target_dependencies(control rclcpp  std_msgs)
-target_link_libraries(control "${cpp_typesupport_target}" nlohmann_json::nlohmann_json)
-# target_link_libraries(control "${cpp_typesupport_target}")
+target_link_libraries(control "${cpp_typesupport_target}")
 
 target_include_directories(control
   PUBLIC

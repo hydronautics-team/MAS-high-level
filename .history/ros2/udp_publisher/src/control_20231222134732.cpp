@@ -2,7 +2,6 @@
 #include <memory>
 #include <string>
 #include <cmath>
-#include <fstream>
 #include <nlohmann/json.hpp>
 
 #include "rclcpp/rclcpp.hpp"
@@ -23,8 +22,8 @@ public:
     // ToBort msg_from_pult_for_planner;
     udp_publisher::msg::FromBort msg_from_bort_for_planner;
     udp_publisher::msg::ToBort msg_from_pult_for_planner;
-    float x_goal = 0;
-    float y_goal = 0;
+    float x_goal = 100;
+    float y_goal = 100;
     // float x_goal = 3;
     // float y_goal = 3;
 
@@ -81,13 +80,12 @@ private:
             x_goal = single_point["x"];
             y_goal = single_point["y"];
 
-            std::cout << "Single Point: (" << x_goal << ", " << y_goal;
+            std::cout << "Single Point: (" << single_x << ", " << single_y;ы
 
             timer_exit_to_point = this->create_wall_timer(std::chrono::milliseconds(TIMER_RATE_MSEC),
                 std::bind(&Control::timer_exit_to_point_callback, this));
         }
-    }  
-    }  
+    }    
 
     void timer_following_callback() {
         auto message = udp_publisher::msg::ToBort();           
@@ -335,6 +333,105 @@ private:
 
     msg_from_bort_for_planner.checksum = 0;
     } 
+
+    // void udp_message_pult_callback(udp_publisher::msg::ToBort const &msg_from_pult) {
+    
+    // msg_from_pult_for_planner.controlData.yaw = msg_from_pult.yaw_joy;
+    // msg_from_pult_for_planner.controlData.pitch = msg_from_pult.pitch_joy;
+    // msg_from_pult_for_planner.controlData.roll = msg_from_pult.roll_joy;
+    // msg_from_pult_for_planner.controlData.march = msg_from_pult.march_joy;
+    // msg_from_pult_for_planner.controlData.depth = msg_from_pult.depth_joy;
+    // msg_from_pult_for_planner.controlData.lag = msg_from_pult.lag_joy;
+
+    // msg_from_pult_for_planner.cSMode = e_CSMode(msg_from_pult.cs_mode);
+
+    // msg_from_pult_for_planner.pultUWB.beacon_x[3] = msg_from_pult.beacon_x[3];
+    // msg_from_pult_for_planner.pultUWB.beacon_y[3] = msg_from_pult.beacon_y[3];
+
+    // msg_from_pult_for_planner.controlContoursFlags.yaw = msg_from_pult.yaw_closed_real;
+    // msg_from_pult_for_planner.controlContoursFlags.pitch = msg_from_pult.pitch_closed_real;
+    // msg_from_pult_for_planner.controlContoursFlags.roll = msg_from_pult.roll_closed_real;
+    // msg_from_pult_for_planner.controlContoursFlags.march = msg_from_pult.march_closed_real;
+    // msg_from_pult_for_planner.controlContoursFlags.depth = msg_from_pult.depth_closed_real;
+    // msg_from_pult_for_planner.controlContoursFlags.lag = msg_from_pult.lag_closed_real;
+
+    // msg_from_pult_for_planner.modeAUV_selection = msg_from_pult.mode_auv_selection;
+
+    // msg_from_pult_for_planner.pMode = power_Mode(msg_from_pult.power_mode);
+
+    // msg_from_pult_for_planner.flagAH127C_pult.initCalibration = msg_from_pult.init_calibration;
+    // msg_from_pult_for_planner.flagAH127C_pult.saveCalibration = msg_from_pult.save_calibration;
+
+    // msg_from_pult_for_planner.ID_mission_AUV = msg_from_pult.id_mission_auv;
+    // msg_from_pult_for_planner.missionControl = mission_Control(msg_from_pult.mission_command);
+
+    // msg_from_pult_for_planner.checksum = msg_from_pult.checksum_to_bort;
+    // }
+
+    // void udp_message_callback(udp_publisher::msg::FromBort const &msg_from_bort) {
+
+    // msg_from_bort_for_planner.headerSwap.senderID = msg_from_bort.sender_id;
+    // msg_from_bort_for_planner.headerSwap.receiverID = msg_from_bort.receiver_id;
+    // msg_from_bort_for_planner.headerSwap.msgSize = msg_from_bort.msg_size;
+
+    // msg_from_bort_for_planner.auvData.modeReal = msg_from_bort.mode_real;
+
+    // msg_from_bort_for_planner.auvData.controlReal.yaw = msg_from_bort.yaw_contour;
+    // msg_from_bort_for_planner.auvData.controlReal.pitch = msg_from_bort.pitch_contour;
+    // msg_from_bort_for_planner.auvData.controlReal.roll = msg_from_bort.roll_contour;
+    // msg_from_bort_for_planner.auvData.controlReal.march = msg_from_bort.march_contour;
+    // msg_from_bort_for_planner.auvData.controlReal.depth = msg_from_bort.depth_contour;
+    // msg_from_bort_for_planner.auvData.controlReal.lag = msg_from_bort.lag_contour;
+
+    // msg_from_bort_for_planner.auvData.modeAUV_Real = msg_from_bort.mode_auv_real;
+
+    // msg_from_bort_for_planner.auvData.ControlDataReal.yaw = msg_from_bort.yaw;
+    // msg_from_bort_for_planner.auvData.ControlDataReal.pitch = msg_from_bort.pitch;
+    // msg_from_bort_for_planner.auvData.ControlDataReal.roll = msg_from_bort.roll;
+    // msg_from_bort_for_planner.auvData.ControlDataReal.march = msg_from_bort.march;
+    // msg_from_bort_for_planner.auvData.ControlDataReal.depth = msg_from_bort.depth;
+    // msg_from_bort_for_planner.auvData.ControlDataReal.lag = msg_from_bort.lag;
+
+    // msg_from_bort_for_planner.auvData.signalVMA_real.VMA1 = msg_from_bort.vma1;
+    // msg_from_bort_for_planner.auvData.signalVMA_real.VMA2 = msg_from_bort.vma2;
+    // msg_from_bort_for_planner.auvData.signalVMA_real.VMA3 = msg_from_bort.vma3;
+    // msg_from_bort_for_planner.auvData.signalVMA_real.VMA4 = msg_from_bort.vma4;
+    // msg_from_bort_for_planner.auvData.signalVMA_real.VMA5 = msg_from_bort.vma5;
+    // msg_from_bort_for_planner.auvData.signalVMA_real.VMA6 = msg_from_bort.vma6;
+
+    // msg_from_bort_for_planner.dataAH127C.yaw = msg_from_bort.yaw_imu;
+    // msg_from_bort_for_planner.dataAH127C.pitch = msg_from_bort.pitch_imu;
+    // msg_from_bort_for_planner.dataAH127C.roll = msg_from_bort.roll_imu;
+    // msg_from_bort_for_planner.dataAH127C.X_accel = msg_from_bort.x_accel_imu;
+    // msg_from_bort_for_planner.dataAH127C.Y_accel = msg_from_bort.y_accel_imu;
+    // msg_from_bort_for_planner.dataAH127C.Z_accel = msg_from_bort.z_accel_imu;
+    // msg_from_bort_for_planner.dataAH127C.X_rate = msg_from_bort.x_rate_imu;
+    // msg_from_bort_for_planner.dataAH127C.Y_rate = msg_from_bort.y_rate_imu;
+    // msg_from_bort_for_planner.dataAH127C.Z_rate = msg_from_bort.z_rate_imu;
+    // msg_from_bort_for_planner.dataAH127C.X_magn = msg_from_bort.x_magn_imu;
+    // msg_from_bort_for_planner.dataAH127C.Y_magn = msg_from_bort.y_magn_imu;
+    // msg_from_bort_for_planner.dataAH127C.Z_magn = msg_from_bort.z_magn_imu;
+    // msg_from_bort_for_planner.dataAH127C.quat[4] = msg_from_bort.quat[4];
+
+    // msg_from_bort_for_planner.dataPressure.temperature = msg_from_bort.temperature;
+    // msg_from_bort_for_planner.dataPressure.depth = msg_from_bort.depth_sensor;
+    // msg_from_bort_for_planner.dataPressure.pressure = msg_from_bort.pressure;
+
+    // msg_from_bort_for_planner.dataUWB.error_code = msg_from_bort.error_code_uwb;
+    // msg_from_bort_for_planner.dataUWB.connection_field = msg_from_bort.connection_field_uwb;
+    // msg_from_bort_for_planner.dataUWB.locationX = msg_from_bort.location_x;
+    // msg_from_bort_for_planner.dataUWB.locationY = msg_from_bort.location_y;
+    // msg_from_bort_for_planner.dataUWB.distanceToBeacon[4] = msg_from_bort.distance_to_beacon[4];
+    // msg_from_bort_for_planner.dataUWB.distanceToAgent[10] = msg_from_bort.distance_to_agent[10];
+
+    // msg_from_bort_for_planner.flagAH127C_bort.startCalibration = msg_from_bort.start_calibration;
+    // msg_from_bort_for_planner.flagAH127C_bort.endCalibration = msg_from_bort.end_calibration;
+
+    // msg_from_bort_for_planner.ID_mission = msg_from_bort.id_mission;
+    // msg_from_bort_for_planner.missionStatus = mission_Status(msg_from_bort.mission_status);
+
+    // msg_from_bort_for_planner.checksum = 0;
+    // } 
 
 private:
     rclcpp::TimerBase::SharedPtr timer_exit_to_point;

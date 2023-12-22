@@ -49,7 +49,7 @@ add_executable(control
   src/control.cpp
 )
 ament_target_dependencies(control rclcpp  std_msgs)
-target_link_libraries(control "${cpp_typesupport_target}" nlohmann_json::nlohmann_json)
+target_link_libraries(control "${cpp_typesupport_target}" )
 # target_link_libraries(control "${cpp_typesupport_target}")
 
 target_include_directories(control
