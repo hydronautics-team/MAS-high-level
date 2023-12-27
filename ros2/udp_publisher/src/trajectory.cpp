@@ -20,9 +20,9 @@ public:
     // float x_goal = 100;
     // float y_goal = 100;
     static const int NUMBER_OF_POINT = 3;
-    float goal[NUMBER_OF_POINT][2] = {{50, 50}, 
-                                      {20, 100}, 
-                                      {60, 150}}; 
+    float goal[NUMBER_OF_POINT][2] = {{100, 300}, 
+                                      {150, 600}, 
+                                      {100, 900}}; 
     int number_of_point = 0;
 
     Trajectory() 

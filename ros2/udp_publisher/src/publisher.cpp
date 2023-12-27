@@ -25,7 +25,7 @@ public:
     static constexpr std::string_view RECEIVER_IP_PULT = "192.168.2.103"; 
     static constexpr unsigned short RECEIVER_PORT_PULT = 13052;
     // IP и ПОРТ пульта(планировщика), на который мы можем слать обратную связь от ноды управления движением
-    static constexpr std::string_view SENDER_IP_PULT = "192.168.2.173"; 
+    static constexpr std::string_view SENDER_IP_PULT = "192.168.2.105"; 
     static constexpr unsigned short SENDER_PORT_PULT = 13053;
 
     int flag_start_mission_1 = 0;

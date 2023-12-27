@@ -3,7 +3,7 @@
 #include <string>
 #include <cmath>
 #include <fstream>
-#include <nlohmann/json.hpp>
+//#include <nlohmann/json.hpp>
 
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
@@ -17,14 +17,14 @@ class Control : public rclcpp::Node {
 public:
     static constexpr int TIMER_RATE_MSEC = 10;
     int flag_start_yaw = 1;
-    int DURATION = 300;
+    int DURATION = 200;
     int count_duration = 0;
     // FromBort msg_from_bort_for_planner;
     // ToBort msg_from_pult_for_planner;
     udp_publisher::msg::FromBort msg_from_bort_for_planner;
     udp_publisher::msg::ToBort msg_from_pult_for_planner;
-    float x_goal = 0;
-    float y_goal = 0;
+    float x_goal = 150;
+    float y_goal = 700;
     // float x_goal = 3;
     // float y_goal = 3;
 
@@ -69,78 +69,42 @@ private:
 
         //выход в точку
         if (conf_str == "go_to_point") {
-            RCLCPP_INFO_STREAM(this->get_logger(), "!!!!!!!!!!!!!!!!!!!!!!!");
+            RCLCPP_INFO_STREAM(this->get_logger(), "I_update!");
 
-            std::ifstream file("config/points.json");
-            if (file.is_open()) {
-            nlohmann::json json_data;
-            file >> json_data;
-            file.close();
+            // std::ifstream file("config/points.json");
+            // if (file.is_open()) {
+            // nlohmann::json json_data;
+            // file >> json_data;
+            // file.close();
 
-            auto single_point = json_data["single_point"];
-            x_goal = single_point["x"];
-            y_goal = single_point["y"];
+            // auto single_point = json_data["single_point"];
+            // x_goal = single_point["x"];
+            // y_goal = single_point["y"];
 
-            std::cout << "Single Point: (" << x_goal << ", " << y_goal;
+            // std::cout << "Single Point: (" << x_goal << ", " << y_goal;
 
             timer_exit_to_point = this->create_wall_timer(std::chrono::milliseconds(TIMER_RATE_MSEC),
                 std::bind(&Control::timer_exit_to_point_callback, this));
         }
     }  
-    }  
+      
 
     void timer_following_callback() {
         auto message = udp_publisher::msg::ToBort();           
-        if (count_duration < DURATION) {                
-            message.yaw_joy = -7;    
-            message.pitch_joy= 0;
-            message.roll_joy = 0;
-            message.march_joy = 3;
-            message.depth_joy= 0;
-            message.lag_joy= 0;
-            message.cs_mode = 0;
-            message.beacon_x[3] = 0;
-            message.beacon_y[3] = 0;
-            message.yaw_closed_real = 0;
-            message.pitch_closed_real = 0;
-            message.roll_closed_real = 0;
-            message.march_closed_real = 0;
-            message.depth_closed_real = 0;
-            message.lag_closed_real = 0;
-            message.mode_auv_selection = 0;
-            message.power_mode = 2;
-            message.init_calibration = 0;
-            message.save_calibration = 0;          
+        if (count_duration < DURATION) { 
+            message = msg_from_pult_for_planner;               
+            message.depth_joy= 10;         
             message.id_mission_auv = 2;
             message.mission_command = 1;
-            message.checksum_to_bort = 3;
-
             count_duration++;
         } 
         if (count_duration >= DURATION) {
         
-            message.yaw_joy = 0;
-            message.pitch_joy= 0;
-            message.roll_joy = 0;
-            message.march_joy = 0;
-            message.depth_joy= 0;
-            message.lag_joy= 0;
-            message.cs_mode = 0;
-            message.beacon_x[3] = 0;
-            message.beacon_y[3] = 0;
-            message.yaw_closed_real = 0;
-            message.pitch_closed_real = 0;
-            message.roll_closed_real = 0;
-            message.march_closed_real = 0;
-            message.depth_closed_real = 0;
-            message.lag_closed_real = 0;
-            message.mode_auv_selection = 0;
-            message.power_mode = 2;
-            message.init_calibration = 0;
-            message.save_calibration = 0;
+            message = msg_from_pult_for_planner;               
+            message.depth_joy = -10;         
             message.id_mission_auv = 2;
-            message.mission_command = 4;
-            message.checksum_to_bort = 0;
+            message.mission_command = 1;
+            count_duration++;
         }
         RCLCPP_INFO_STREAM(this->get_logger(), "cnt " << count_duration  );
         publisher_to_bort->publish(message);
@@ -200,7 +164,7 @@ private:
                     message_to_bort.yaw_joy = atan(y_v_SK_sv_x_y_goal/x_v_SK_sv_x_y_goal)*(180/M_PI); // расчет угла курса и его перевод в градусы
                 }
                 if ((y_v_SK_sv_x_y_goal > 0)) {
-                    message_to_bort.yaw_joy = -atan(y_v_SK_sv_x_y_goal/x_v_SK_sv_x_y_goal)*(180/M_PI); // 2 четверть
+                    message_to_bort.yaw_joy = atan(y_v_SK_sv_x_y_goal/x_v_SK_sv_x_y_goal)*(180/M_PI); // 2 четверть
                 }
             }
             if (x_v_SK_sv_x_y_goal >= 0) {

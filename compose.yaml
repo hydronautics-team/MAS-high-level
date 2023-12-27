@@ -3,7 +3,7 @@ version: '3'
 services:
   mas_bort:
     image: annaspitsina/mas_bort:dev
-    container_name: mas_high_level
+    container_name: mas_high_level_auv
     privileged: true
     network_mode: "host"
     volumes:
